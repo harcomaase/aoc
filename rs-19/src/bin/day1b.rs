@@ -9,8 +9,16 @@ fn main() {
         if line.is_empty() {
             continue;
         }
-        let mass = line.parse::<u32>().unwrap();
-        required_fuel += (mass / 3) - 2;
+        let mass = line.parse::<i32>().unwrap();
+        required_fuel += calculate_fuel_complete(mass);
     }
     println!("{}", required_fuel);
+}
+
+fn calculate_fuel_complete(mass : i32) -> i32 {
+    let fuel = (mass / 3) - 2;
+    if fuel < 0 {
+        return 0;
+    }
+    fuel + calculate_fuel_complete(fuel)
 }
