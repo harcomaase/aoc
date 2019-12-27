@@ -1,5 +1,4 @@
 use std::fs;
-use std::io;
 
 struct Instruction {
     opcode: u32,
@@ -20,7 +19,7 @@ struct Tile {
 }
 
 fn main() {
-    let filename = "../input/19/day15.txt";
+    let filename = "../input/19/day17.txt";
     let file = fs::read_to_string(filename).expect("Something went wrong reading the file");
 
     let intcode: Vec<i64> = file
@@ -35,164 +34,65 @@ fn main() {
         running: true,
     };
 
+    //let way = "L,10,R,8,L,6,R,6,L,8,L,8,R,8,L,10,R,8,L,6,R,6,R,8,L,6,L,10,L,10,L,10,R,8,L,6,R,6,L,8,L,8,R,8,R,8,L,6,L,10,L,10,L,8,L,8,R,8,R,8,L,6,L,10,L,10,L,8,L,8,R,8";
+    let way = "A,B,A,C,A,B,C,B,C,B\n";
+    let way_a = "L,10,R,8,L,6,R,6\n";
+    let way_b = "L,8,L,8,R,8\n";
+    let way_c = "R,8,L,6,L,10,L,10\n";
+
+    let mut inputs: Vec<i64> = Vec::new();
+
+    for c in way.chars() {
+        inputs.push(c as i64);
+    }
+    for c in way_a.chars() {
+        inputs.push(c as i64);
+    }
+    for c in way_b.chars() {
+        inputs.push(c as i64);
+    }
+    for c in way_c.chars() {
+        inputs.push(c as i64);
+    }
+    for c in "n\n".chars() {
+        inputs.push(c as i64);
+    }
+
+    inputs.reverse();
+
     let mut tiles: Vec<Tile> = Vec::new();
 
-    tiles.push(Tile { x: 0, y: 0, id: 1 });
+    let mut x = 0;
+    let mut y = 0;
 
-    let mut droid = Tile { x: 0, y: 0, id: 0 };
-
-    let mut last_direction = 1;
-
-    let mut steps = 0;
+    int_com.intcode[0] = 2;
 
     while int_com.running {
-        let direction = determine_move(&tiles, &droid, last_direction);
-        let result = run_intcode_computer(&mut int_com, vec![direction], 1);
+        let result = run_intcode_computer(&mut int_com, &mut inputs, 1);
         let output = result.unwrap();
         if !int_com.running && output.is_empty() {
             break;
         }
-        steps += 1;
         let status = output[0];
-        let mut next_tile = Tile {
-            id: status,
-            ..droid
-        };
-        match direction {
-            1 => next_tile.y += 1,
-            2 => next_tile.y -= 1,
-            3 => next_tile.x -= 1,
-            4 => next_tile.x += 1,
-            _ => panic!("unknown direction"),
-        }
-        tiles.push(next_tile);
+        println!("got status {}", status);
         match status {
-            0 => {}
-            1 => {
-                last_direction = direction;
-                match direction {
-                    1 => droid.y += 1,
-                    2 => droid.y -= 1,
-                    3 => droid.x -= 1,
-                    4 => droid.x += 1,
-                    _ => panic!("unknown direction"),
-                };
+            10 => {
+                x = 0;
+                y += 1;
+                continue;
             }
-            2 => {
-                match direction {
-                    1 => droid.y += 1,
-                    2 => droid.y -= 1,
-                    3 => droid.x -= 1,
-                    4 => droid.x += 1,
-                    _ => panic!("unknown direction"),
-                };
-                println!("found the oxygen system!");
-                // break;
+            11..=120 => {
+                //scaffold
+                tiles.push(Tile { x, y, id: status });
             }
-            _ => panic!("unknown status"),
-        }
-
-        if steps > 10 && droid.x == 0 && droid.y == 0 {
-            break;
-        }
+            _ => panic!("unknown tile"),
+        };
+        x += 1;
     }
-    print_tiles(&tiles, &droid);
-
-    tiles[0].id = 3;
-    let mut water_steps = 0;
-
-    'water: loop {
-        water_steps += 1;
-        let water_tile_indices: Vec<usize> = find_tile_indices_by_id(&tiles, 3);
-
-        let mut adjacent_tile_indices: Vec<usize> = Vec::new();
-        for water_tile_index in water_tile_indices {
-            let water_tile = &tiles[water_tile_index];
-
-            adjacent_tile_indices
-                .push(find_tile_index(&tiles, water_tile.x, water_tile.y + 1).unwrap());
-            adjacent_tile_indices
-                .push(find_tile_index(&tiles, water_tile.x, water_tile.y - 1).unwrap());
-            adjacent_tile_indices
-                .push(find_tile_index(&tiles, water_tile.x + 1, water_tile.y).unwrap());
-            adjacent_tile_indices
-                .push(find_tile_index(&tiles, water_tile.x - 1, water_tile.y).unwrap());
-        }
-
-        for adjacent_tile_index in adjacent_tile_indices {
-            let mut adjacent_tile = &mut tiles[adjacent_tile_index];
-            match adjacent_tile.id {
-                1 => adjacent_tile.id = 3,
-                2 => break 'water,
-                _ => (),
-            }
-        }
-
-        // print_tiles(&tiles, &droid);
-        // let duration = time::Duration::from_millis(500);
-        // thread::sleep(duration);
-    }
-    print_tiles(&tiles, &droid);
-
-    println!("took {} steps", water_steps);
+    print_tiles(&tiles);
 }
 
-fn determine_move(tiles: &Vec<Tile>, droid: &Tile, last_direction: i64) -> i64 {
-    let right_of = right_of(tiles, droid, last_direction);
-
-    if right_of > 0 {
-        return right_of;
-    }
-
-    //found nothing, ask the user:
-    let mut buf = String::new();
-    io::stdin().read_line(&mut buf).unwrap();
-    let input = buf.trim();
-
-    match input {
-        "w" | "1" => 1,
-        "s" | "2" => 2,
-        "a" | "3" => 3,
-        "d" | "4" => 4,
-        _ => panic!("unknown input"),
-    }
-}
-
-fn right_of(tiles: &Vec<Tile>, droid: &Tile, last_direction: i64) -> i64 {
-    let direction_right_of_droid = match last_direction {
-        1 => 4,
-        2 => 3,
-        3 => 1,
-        4 => 2,
-        _ => panic!("bla"),
-    };
-    let tile_index_right_of_droid_opt = match direction_right_of_droid {
-        1 => find_tile_index(tiles, droid.x, droid.y + 1),
-        2 => find_tile_index(tiles, droid.x, droid.y - 1),
-        3 => find_tile_index(tiles, droid.x - 1, droid.y),
-        4 => find_tile_index(tiles, droid.x + 1, droid.y),
-        _ => panic!("bla"),
-    };
-    if tile_index_right_of_droid_opt.is_none() {
-        return direction_right_of_droid;
-    }
-    let tile_index_right_of_droid = tile_index_right_of_droid_opt.unwrap() as usize;
-    let tile_opt = tiles.get(tile_index_right_of_droid);
-    if tile_opt.is_none() || tile_opt.unwrap().id != 0 {
-        return direction_right_of_droid;
-    }
-
-    let dir = match last_direction {
-        1 => 3,
-        2 => 4,
-        3 => 2,
-        4 => 1,
-        _ => panic!("bla"),
-    };
-    right_of(tiles, droid, dir)
-}
-
-fn print_tiles(tiles: &Vec<Tile>, droid: &Tile) {
+fn get_min_max(tiles: &Vec<Tile>) -> (i64, i64, i64, i64) {
     let mut min_x = 0;
     let mut max_x = 0;
     let mut min_y = 0;
@@ -211,20 +111,21 @@ fn print_tiles(tiles: &Vec<Tile>, droid: &Tile) {
             max_y = tile.y;
         }
     }
+    (min_x, max_x, min_y, max_y)
+}
 
-    for y in (min_y - 1..max_y + 1).rev() {
+fn print_tiles(tiles: &Vec<Tile>) {
+    let (min_x, max_x, min_y, max_y) = get_min_max(tiles);
+
+    for y in min_y - 1..max_y + 1 {
         for x in min_x - 1..max_x + 1 {
-            if droid.x == x && droid.y == y {
-                print!("D");
-                continue;
-            }
             match find_tile_index(tiles, x, y) {
                 Some(index) => match tiles[index].id {
-                    0 => print!("#"),
-                    1 => print!(" "),
-                    2 => print!("O"),
-                    3 => print!("."),
-                    _ => panic!("unknown color"),
+                    _ => print!("{}", std::char::from_u32(tiles[index].id as u32).unwrap()),
+                    // 35 => print!("#"),
+                    // 46 => print!("."),
+                    // 94 => print!("X"),
+                    // _ => panic!("unknown color"),
                 },
                 None => print!(" "),
             }
@@ -242,19 +143,9 @@ fn find_tile_index(tiles: &Vec<Tile>, x: i64, y: i64) -> Option<usize> {
     None
 }
 
-fn find_tile_indices_by_id(tiles: &Vec<Tile>, id: i64) -> Vec<usize> {
-    let mut result = Vec::new();
-    for (index, tile) in tiles.iter().enumerate() {
-        if tile.id == id {
-            result.push(index);
-        }
-    }
-    result
-}
-
 fn run_intcode_computer(
     int_com: &mut IntcodeComputer,
-    mut inputs: Vec<i64>,
+    inputs: &mut Vec<i64>,
     expected_output_length: usize,
 ) -> Option<Vec<i64>> {
     let mut outputs: Vec<i64> = Vec::new();
@@ -280,7 +171,7 @@ fn run_intcode_computer(
             }
             3 => {
                 let input = inputs.pop().unwrap();
-                // println!("input value: {}", input);
+                println!("input value: {}", input);
                 let pos: i64 = get_output_parameter(int_com, 1, instruction.modes);
                 ensure_capacity(&mut int_com.intcode, pos as usize);
                 // println!("writing value {} to position {}", input, pos);
