@@ -13,12 +13,6 @@ struct IntcodeComputer {
     running: bool,
 }
 
-struct Tile {
-    x: i64,
-    y: i64,
-    id: u8,
-}
-
 fn main() {
     let filename = "../input/19/day13.txt";
     let file = fs::read_to_string(filename).expect("Something went wrong reading the file");
@@ -35,8 +29,6 @@ fn main() {
         running: true,
     };
 
-    let mut tiles: Vec<Tile> = Vec::new();
-
     let mut block_tiles = 0;
     while int_com.running {
         let result = run_intcode_computer(&mut int_com, vec![], 3);
@@ -49,11 +41,6 @@ fn main() {
         if id == 2 {
             block_tiles += 1;
         }
-        tiles.push(Tile {
-            x: output[0],
-            y: output[1],
-            id: id,
-        })
     }
 
     println!("block tiles: {}", block_tiles);
