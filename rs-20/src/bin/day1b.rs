@@ -2,7 +2,7 @@ use std::fs;
 
 fn main() {
     let filename = "../input/20/day1.txt";
-    let file = fs::read_to_string(filename).expect("Something went wrong reading the file");
+    let file = fs::read_to_string(filename).expect("successfully reading the input");
 
     let entries: Vec<i32> = file
         .split("\n")

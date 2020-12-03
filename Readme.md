@@ -1,5 +1,7 @@
 # advent of code
 
+## 2020
+- trying to solve everything in rust :)
 
 ## 2019
 goals this year:

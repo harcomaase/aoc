@@ -3,7 +3,7 @@ use std::fs;
 
 fn main() {
     let filename = "../input/20/day2.txt";
-    let file = fs::read_to_string(filename).expect("Something went wrong reading the file");
+    let file = fs::read_to_string(filename).expect("successfully reading the input");
 
     let regex = Regex::new(r"^([0-9]+)\-([0-9]+) ([a-zA-Z]): ([a-zA-Z]+)").expect("valid regex");
 
