@@ -1,5 +1,8 @@
 # advent of code
 
+## 2021
+- again everything in rust, using either vscode or vim
+
 ## 2020
 - trying to solve everything in rust :)
 
