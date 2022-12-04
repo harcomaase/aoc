@@ -1,5 +1,8 @@
 # advent of code
 
+## 2022
+- rust all the way :)
+
 ## 2021
 - again everything in rust, using either vscode or vim
 
