@@ -3,7 +3,6 @@ use std::fs;
 
 #[derive(Debug)]
 struct Rule {
-    field: String,
     range1: (usize, usize),
     range2: (usize, usize),
 }
@@ -60,7 +59,6 @@ fn parse_rules(raw_rules: &str) -> Vec<Rule> {
     for raw_rule in raw_rules.lines() {
         let captures = rules_regex.captures(raw_rule).expect("successful capture");
 
-        let field = captures.get(1).expect("valid capture group 1").as_str();
         let range1_low = captures
             .get(2)
             .expect("valid capture group 2")
@@ -87,7 +85,6 @@ fn parse_rules(raw_rules: &str) -> Vec<Rule> {
             .expect("parsable number");
 
         rules.push(Rule {
-            field: String::from(field),
             range1: (range1_low, range1_high),
             range2: (range2_low, range2_high),
         });
