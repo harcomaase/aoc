@@ -78,9 +78,9 @@ fn main() {
         });
     }
 
-    for entry in &entries {
-        print_entry(entry);
-    }
+    // for entry in &entries {
+    //     print_entry(entry);
+    // }
 
     // calculate directory sizes
     let mut directories = Vec::new();
@@ -98,10 +98,10 @@ fn main() {
         }
     }
 
-    println!();
-    for dir in &directories {
-        print_entry(&dir);
-    }
+    // println!();
+    // for dir in &directories {
+    //     print_entry(&dir);
+    // }
 
     // show only the ones with size less than 100000
     println!();

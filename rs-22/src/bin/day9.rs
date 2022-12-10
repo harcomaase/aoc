@@ -15,7 +15,6 @@ fn main() {
     let mut positions_tail_visitited = Vec::new();
 
     for line in input.lines() {
-        println!("== {} ==", line);
         let steps = &line[2..].parse::<i32>().unwrap();
         let (dx, dy) = match &line[..1] {
             "R" => (1, 0),
@@ -62,10 +61,10 @@ fn main() {
                 positions_tail_visitited.push(pos_tail.clone());
             }
 
-            println!(
-                "head ({}|{}), tail ({}|{})",
-                pos_head.x, pos_head.y, pos_tail.x, pos_tail.y
-            );
+            // println!(
+            //     "head ({}|{}), tail ({}|{})",
+            //     pos_head.x, pos_head.y, pos_tail.x, pos_tail.y
+            // );
         }
     }
 

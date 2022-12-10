@@ -78,9 +78,9 @@ fn main() {
         });
     }
 
-    for entry in &entries {
-        print_entry(entry);
-    }
+    // for entry in &entries {
+    //     print_entry(entry);
+    // }
 
     // calculate directory sizes
     let mut directories = Vec::new();
@@ -99,9 +99,9 @@ fn main() {
     }
 
     println!();
-    for dir in &directories {
-        print_entry(&dir);
-    }
+    // for dir in &directories {
+    //     print_entry(&dir);
+    // }
 
     // find directories which, if deleted, would free enough space
     let total_disk_space = 70000000;

@@ -52,6 +52,6 @@ fn calculate_scenic_score(tree: u8, trees: &Vec<Vec<u8>>, x: usize, y: usize) ->
             break;
         }
     }
-    println!("{} {} {} {} = {}", visible_up, visible_down, visible_left, visible_right, visible_up * visible_down * visible_left * visible_right);
+    // println!("{} {} {} {} = {}", visible_up, visible_down, visible_left, visible_right, visible_up * visible_down * visible_left * visible_right);
     visible_up * visible_down * visible_left * visible_right
 }
