@@ -1,8 +1,15 @@
 use std::fs;
 
+#[derive(Debug)]
+struct Node {
+    value: Value,
+    parent: usize,
+}
+
+#[derive(Debug)]
 enum Value {
     Integer(i64),
-    List(Vec<Value>),
+    List(Vec<usize>),
 }
 
 fn main() {
@@ -20,32 +27,83 @@ fn parse_input(input: &str) {
         let right = lines.next().unwrap();
         assert_eq!(None, lines.next());
 
-        parse_packet(left);
-        parse_packet(right);
+        let nodes1 = parse_packet(left);
+        let nodes2 = parse_packet(right);
+
+        println!("{:?}", nodes1);
+        println!("{:?}", nodes2);
+        println!();
     }
 }
 
-fn parse_packet(packet: &str) {
-    let mut current: Vec<Value> = Vec::new();
+fn parse_packet(packet: &str) -> Vec<Node> {
+    let mut nodes = Vec::new();
+
+    let mut current_list = 0;
 
     let chars: Vec<char> = packet.chars().collect();
+    let mut buf = Vec::with_capacity(3);
 
-    let mut i = 1;
-    while i < chars.len() - 1 {
+    let mut i = 0;
+    while i < chars.len() {
         let c = chars[i];
         match c {
             '[' => {
-                let nested_list = Vec::new();
-                current.push(Value::List(nested_list))
-                //TODO: make nested_list current, keep track of branches in this tree
+                let node = Node {
+                    parent: current_list,
+                    value: Value::List(Vec::new()),
+                };
+                let index = nodes.len();
+                nodes.push(node);
+                if index > 0 {
+                    match &mut nodes[current_list].value {
+                        Value::Integer(_) => panic!(),
+                        Value::List(list) => list.push(index),
+                    };
+                    current_list = index;
+                }
             }
-            ']' => (),
+            ']' => {
+                if buf.len() > 0 {
+                    let number = buf.iter().collect::<String>().parse().unwrap();
+                    let node = Node {
+                        parent: current_list,
+                        value: Value::Integer(number),
+                    };
+                    let index = nodes.len();
+                    nodes.push(node);
+                    match &mut nodes[current_list].value {
+                        Value::Integer(_) => panic!(),
+                        Value::List(list) => list.push(index),
+                    };
+                    buf.clear();
+                }
+                current_list = nodes[current_list].parent;
+                //TODO: make parent list current
+            }
             '0'..='9' => {
-                // collect numbers until ']' or ','
+                buf.push(c);
             }
-            ',' => (),
+            ',' => {
+                if buf.len() > 0 {
+                    let number = buf.iter().collect::<String>().parse().unwrap();
+                    let node = Node {
+                        parent: current_list,
+                        value: Value::Integer(number),
+                    };
+                    let index = nodes.len();
+                    nodes.push(node);
+                    match &mut nodes[current_list].value {
+                        Value::Integer(_) => panic!(),
+                        Value::List(list) => list.push(index),
+                    };
+                    buf.clear();
+                }
+            }
             _ => panic!("unexpected character: {}", c),
         }
         i += 1;
     }
+
+    nodes
 }
