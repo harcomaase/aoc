@@ -11,12 +11,13 @@ struct Pos {
 fn main() {
     let input = fs::read_to_string("../input/22/day12.txt").unwrap();
 
-    let (mut map, start, mut end) = parse_input(&input);
+    let (mut map, start) = parse_input(&input);
 
     let mut queue = VecDeque::with_capacity(map.len() * map[0].len());
     queue.push_back((start.x, start.y));
 
     let directions = [(1, 0), (-1, 0), (0, 1), (0, -1)];
+    let steps;
 
     'outer: loop {
         let current = queue.pop_front().unwrap();
@@ -37,25 +38,24 @@ fn main() {
             if next.visited {
                 continue;
             }
-            if next.height > current_height + 1 {
+            if next.height < current_height - 1 {
                 continue;
             }
             next.steps = current_steps + 1;
             next.visited = true;
-            if next.x == end.x && next.y == end.y {
-                end.steps = next.steps;
+            if next.height == 0 {
+                steps = next.steps;
                 break 'outer;
             }
             queue.push_back((next.x, next.y));
         }
     }
 
-    println!("shortest path: {} steps", end.steps);
+    println!("shortest path: {} steps", steps);
 }
 
-fn parse_input(input: &str) -> (Vec<Vec<Pos>>, Pos, Pos) {
+fn parse_input(input: &str) -> (Vec<Vec<Pos>>, Pos) {
     let mut result = Vec::new();
-    let mut start = None;
     let mut end = None;
     for (y, line) in input.lines().enumerate() {
         let mut row = Vec::new();
@@ -63,17 +63,7 @@ fn parse_input(input: &str) -> (Vec<Vec<Pos>>, Pos, Pos) {
             let x = x as i32;
             let y = y as i32;
             let height = match c {
-                'S' => {
-                    let h = 'a' as u8 - 97;
-                    start = Some(Pos {
-                        x,
-                        y,
-                        height: h,
-                        visited: true,
-                        steps: 0,
-                    });
-                    h
-                }
+                'S' => 'a' as u8 - 97,
                 'E' => {
                     let h = 'z' as u8 - 97;
                     end = Some(Pos {
@@ -97,5 +87,5 @@ fn parse_input(input: &str) -> (Vec<Vec<Pos>>, Pos, Pos) {
         }
         result.push(row);
     }
-    (result, start.unwrap(), end.unwrap())
+    (result, end.unwrap())
 }
