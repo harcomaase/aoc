@@ -1,5 +1,9 @@
 # advent of code
 
+## 2023
+
+- rust/go, and neovim btw
+
 ## 2022
 - rust all the way :)
 - created script to measure the execution time of all programs together, goal: minimize it :)
