@@ -1,8 +1,8 @@
 # advent of code
 
 ## 2023
-
-- rust/go, and neovim btw
+- rust, and neovim btw
+- tried go shortly
 
 ## 2022
 - rust all the way :)

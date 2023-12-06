@@ -7,9 +7,16 @@ import (
 	"strings"
 )
 
-type Relation struct {
+type CategoryRelation struct {
+	srcCategory  string
 	destCategory string
-	rel          map[int]int
+	relations    []Relation
+}
+
+type Relation struct {
+	srcStart  int
+	destStart int
+	offset    int
 }
 
 func main() {
@@ -23,16 +30,8 @@ func main() {
 
 	// first paragraph contains seeds
 	seeds_input := strings.Split(strings.TrimSpace(splits[0]), " ")[1:]
-	seeds := make([]int, 0)
-	for _, v := range seeds_input {
-		i, err := strconv.Atoi(v)
-		if err != nil {
-			panic(err)
-		}
-		seeds = append(seeds, i)
-	}
 
-	relations := make(map[string]Relation)
+	categoryRelations := make([]CategoryRelation, 0)
 
 	// read relations
 	for _, paragraph := range splits[1:] {
@@ -43,7 +42,10 @@ func main() {
 		whitespaceIndex := strings.Index(relationLine, " ")
 		rel2 := relationLine[firstDashIndex+4 : whitespaceIndex]
 
-		relation := make(map[int]int)
+		srcCategory := rel1
+		destCategory := rel2
+		relations := make([]Relation, 0)
+		categoryRelation := CategoryRelation{srcCategory, destCategory, relations}
 		for _, line := range lines[1:] {
 			if len(line) == 0 {
 				continue
@@ -62,32 +64,77 @@ func main() {
 				panic(err)
 			}
 
-			for i := 0; i < offset; i += 1 {
-				relation[src+i] = dest + i
-			}
+			relation := Relation{src, dest, offset}
+			categoryRelation.relations = append(categoryRelation.relations, relation)
 		}
-		category := rel1
-		relations[category] = Relation{rel2, relation}
+		categoryRelations = append(categoryRelations, categoryRelation)
 	}
 
+	results := make([]chan int, 0)
+	for i := 0; i < len(seeds_input); i += 2 {
+		result := make(chan int, 1)
+		index := i
+		go func() {
+			start, err := strconv.Atoi(seeds_input[index])
+			if err != nil {
+				panic(err)
+			}
+			offset, err := strconv.Atoi(seeds_input[index+1])
+			if err != nil {
+				panic(err)
+			}
+			lowestSubLocation := -1
+			for j := 0; j < offset; j += 1 {
+				seed := start + j
+				location := followSeed(seed, &categoryRelations)
+				if location < lowestSubLocation || lowestSubLocation == -1 {
+					lowestSubLocation = location
+				}
+			}
+			result <- lowestSubLocation
+		}()
+
+		results = append(results, result)
+	}
 	lowestLocation := -1
-	for _, seed := range seeds {
-		src := seed
-		category := "seed"
-		for category != "location" {
-			relation := relations[category]
-			dest, found := relation.rel[src]
-			if !found {
-				dest = src
-			}
-			src = dest
-			category = relation.destCategory
-		}
-
-		if lowestLocation > src || lowestLocation == -1 {
-			lowestLocation = src
+	for i := 0; i < len(results); i += 1 {
+		result := results[i]
+		location := <-result
+		if location < lowestLocation || lowestLocation == -1 {
+			lowestLocation = location
 		}
 	}
-	fmt.Printf("lowest location: %v\n", lowestLocation)
+	fmt.Printf("%v\n", lowestLocation)
 
+}
+
+func followSeed(seed int, categoryRelations *[]CategoryRelation) int {
+	src := seed
+	srcCategory := "seed"
+	for srcCategory != "location" {
+		categoryRelation := findForSrcCategory(srcCategory, categoryRelations)
+
+		// find target index
+		// 1) has src different target?
+		for _, relation := range categoryRelation.relations {
+			if relation.srcStart <= src && src <= relation.srcStart+relation.offset {
+				// we are within the range, now calculate the actual offset
+				diff := relation.destStart - relation.srcStart
+				src += diff
+				break
+			}
+		}
+		srcCategory = categoryRelation.destCategory
+	}
+
+	return src
+}
+
+func findForSrcCategory(srcCategory string, categoryRelations *[]CategoryRelation) CategoryRelation {
+	for _, categoryRelation := range *categoryRelations {
+		if categoryRelation.srcCategory == srcCategory {
+			return categoryRelation
+		}
+	}
+	panic("should not happen")
 }
