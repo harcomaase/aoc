@@ -7,6 +7,7 @@ struct Hand {
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
 enum Card {
+    Jack,
     Two,
     Three,
     Four,
@@ -16,7 +17,6 @@ enum Card {
     Eight,
     Nine,
     Ten,
-    Jack,
     Queen,
     King,
     Ace,
@@ -40,21 +40,62 @@ impl From<&Hand> for HandType {
             *map.entry(*c).or_insert(0) += 1;
         }
 
+        let joker_quantity = *map.get(&'J').unwrap_or(&0);
+
         match map.values().max().unwrap() {
             5 => HandType::FiveOfAKind,
-            4 => HandType::FourOfAKind,
-            3 => match map.values().find(|v| **v == 2) {
-                Some(_) => HandType::FullHouse,
-                None => HandType::ThreeOfAKind,
-            },
-            2 => {
-                if map.values().filter(|v| **v == 2).count() == 2 {
-                    HandType::TwoPair
+            4 => {
+                if joker_quantity > 0 {
+                    HandType::FiveOfAKind
                 } else {
-                    HandType::OnePair
+                    HandType::FourOfAKind
                 }
             }
-            1 => HandType::HighCard,
+            3 => {
+                if joker_quantity == 3 {
+                    match map.values().find(|v| **v == 2) {
+                        Some(_) => HandType::FiveOfAKind,
+                        None => HandType::FourOfAKind,
+                    }
+                } else if joker_quantity == 2 {
+                    HandType::FiveOfAKind
+                } else if joker_quantity == 1 {
+                    HandType::FourOfAKind
+                } else {
+                    match map.values().find(|v| **v == 2) {
+                        Some(_) => HandType::FullHouse,
+                        None => HandType::ThreeOfAKind,
+                    }
+                }
+            }
+            2 => {
+                if joker_quantity == 2 {
+                    if map.values().filter(|v| **v == 2).count() == 2 {
+                        HandType::FourOfAKind
+                    } else {
+                        HandType::ThreeOfAKind
+                    }
+                } else if joker_quantity == 1 {
+                    if map.values().filter(|v| **v == 2).count() == 2 {
+                        HandType::FullHouse
+                    } else {
+                        HandType::ThreeOfAKind
+                    }
+                } else {
+                    if map.values().filter(|v| **v == 2).count() == 2 {
+                        HandType::TwoPair
+                    } else {
+                        HandType::OnePair
+                    }
+                }
+            }
+            1 => {
+                if joker_quantity == 1 {
+                    HandType::OnePair
+                } else {
+                    HandType::HighCard
+                }
+            }
             _ => panic!(),
         }
     }
@@ -72,10 +113,10 @@ impl From<char> for Card {
             '8' => Self::Eight,
             '9' => Self::Nine,
             'T' => Self::Ten,
-            'J' => Self::Jack,
             'Q' => Self::Queen,
             'K' => Self::King,
             'A' => Self::Ace,
+            'J' => Self::Jack,
             _ => panic!(),
         }
     }
@@ -233,12 +274,82 @@ mod tests {
                 cards: vec!['T', 'T', 'T', '7', '9']
             }
         );
-        assert!(
-            Hand {
-                cards: vec!['K', 'K', '6', '7', '7']
-            } > Hand {
-                cards: vec!['K', 'T', 'J', 'J', 'T']
-            }
+
+        assert_eq!(
+            HandType::FiveOfAKind,
+            HandType::from(&Hand {
+                cards: vec!['A', 'A', 'A', 'A', 'J']
+            })
+        );
+        assert_eq!(
+            HandType::FiveOfAKind,
+            HandType::from(&Hand {
+                cards: vec!['A', 'A', 'A', 'J', 'J']
+            })
+        );
+        assert_eq!(
+            HandType::FiveOfAKind,
+            HandType::from(&Hand {
+                cards: vec!['A', 'A', 'J', 'J', 'J']
+            })
+        );
+        assert_eq!(
+            HandType::FiveOfAKind,
+            HandType::from(&Hand {
+                cards: vec!['A', 'J', 'J', 'J', 'J']
+            })
+        );
+        assert_eq!(
+            HandType::FiveOfAKind,
+            HandType::from(&Hand {
+                cards: vec!['J', 'J', 'J', 'J', 'J']
+            })
+        );
+
+        assert_eq!(
+            HandType::FourOfAKind,
+            HandType::from(&Hand {
+                cards: vec!['J', 'J', 'J', 'A', 'Q']
+            })
+        );
+        assert_eq!(
+            HandType::FourOfAKind,
+            HandType::from(&Hand {
+                cards: vec!['A', 'A', 'J', 'J', 'Q']
+            })
+            );
+
+        assert_eq!(
+            HandType::FullHouse,
+            HandType::from(&Hand {
+                cards: vec!['A', 'A', 'A', 'J', 'Q']
+            })
+        );
+        assert_eq!(
+            HandType::FullHouse,
+            HandType::from(&Hand {
+                cards: vec!['A', 'A', 'J', 'Q', 'Q']
+            })
+        );
+
+        assert_eq!(
+            HandType::ThreeOfAKind,
+            HandType::from(&Hand {
+                cards: vec!['A', 'K', 'J', 'J', 'Q']
+            })
+        );
+        assert_eq!(
+            HandType::ThreeOfAKind,
+            HandType::from(&Hand {
+                cards: vec!['A', 'A', 'J', 'K', 'Q']
+            })
+        );
+
+        assert_eq!(
+            HandType::OnePair,
+            HandType::from(&Hand {
+                cards: vec!['A', 'Q', 'J', 'K', 'T']
+            })
         );
     }
 }
