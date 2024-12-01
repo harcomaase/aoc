@@ -1,5 +1,9 @@
 # advent of code
 
+## 2024
+
+- rust
+
 ## 2023
 - rust, and neovim btw
 - tried go shortly
