@@ -1,6 +1,11 @@
 fn main() {
     let input = std::fs::read_to_string("./inputs/2.txt").unwrap();
 
+    let output = solve(input);
+    println!("{output}");
+}
+
+fn solve(input: String) -> i32 {
     let mut total = 0;
     for report in input.lines() {
         let levels: Vec<i32> = report
@@ -22,7 +27,7 @@ fn main() {
             }
         }
     }
-    println!("{total}");
+    total
 }
 
 fn check(report: &Vec<i32>) -> bool {
@@ -62,4 +67,17 @@ enum Ord {
     UNSURE,
     ASC,
     DESC,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn example_input1() {
+        let input = std::fs::read_to_string("./inputs/2-t1.txt").unwrap();
+
+        let output = solve(input);
+        assert_eq!(4, output);
+    }
 }
