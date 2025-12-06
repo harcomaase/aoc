@@ -1,0 +1,9 @@
+target/
+**/*.rs.bk
+.vscode/
+.project
+.classpath
+.settings/
+
+Cargo.lock
+*.txt
