@@ -4,6 +4,7 @@
 
 - rust
 - execution times < 1s
+- (removed all committed puzzle inputs, since the author kindly asks the participants to not publish them)
 
 ## 2024
 
