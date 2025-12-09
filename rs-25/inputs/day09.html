@@ -11,19 +11,13 @@
     <script>
         class Point {
             constructor(x, y) {
-                this.x = x;
-                this.y = y;
+                this.x = x / 100.;
+                this.y = y / 100.;
             }
         }
 
         const points = [];
         loadPoints();
-
-        // downsize
-        points.forEach((p) => {
-            p.x /= 100.0;
-            p.y /= 100.0;
-        });
 
         const canvas = document.getElementById('canvas');
         const context = canvas.getContext("2d");
@@ -45,6 +39,7 @@
 
         function loadPoints() {
             // -snip-
+            // (add all points from your input here)
         }
 
     </script>
