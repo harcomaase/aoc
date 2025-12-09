@@ -1,0 +1,54 @@
+<html>
+
+<head>
+
+</head>
+
+<body>
+
+    <canvas width="1000" height="1000" id="canvas" style="background-color: lightgray;"></canvas>
+
+    <script>
+        class Point {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+        }
+
+        const points = [];
+        loadPoints();
+
+        // downsize
+        points.forEach((p) => {
+            p.x /= 100.0;
+            p.y /= 100.0;
+        });
+
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext("2d");
+
+        context.beginPath();
+
+        const lastPoint = points[points.length - 1];
+        context.moveTo(lastPoint.x, lastPoint.y);
+
+        for (let i = 0; i < points.length - 1; i += 1) {
+            let p = points[i];
+
+            context.lineTo(p.x, p.y);
+        }
+
+        context.stroke();
+
+        console.log('done');
+
+        function loadPoints() {
+            // -snip-
+        }
+
+    </script>
+
+</body>
+
+</html>
