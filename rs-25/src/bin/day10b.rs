@@ -8,9 +8,12 @@ struct Machine {
 }
 
 fn main() {
-    let input = fs::read_to_string("inputs/day10.txt").unwrap();
+    let input = fs::read_to_string("inputs/day10-test.txt").unwrap();
 
     let machines = parse_machines(&input);
+
+    //TODO: instead of brute-forcing permutations, we can start from the joltage_requirements,
+    //      then ... idk, select most fitting buttons to reduce the highest||lowest first?
 
     let mut total_button_presses = 0;
     for machine in &machines {
@@ -18,21 +21,26 @@ fn main() {
         // has to be pressed once, since two button presses change nothing)
         let indices: Vec<usize> = (0..machine.button_wirings.len()).collect();
         // try first 1 button press, then 2, then... n
-        for permutation_length in 1..=indices.len() {
-            let button_press_sequence_permutations = permutations(&indices, permutation_length);
+        for permutation_length in 1.. {
+            let button_press_sequence_permutations =
+                permutations_with_repetitions(&indices, permutation_length);
+            // println!("permutations: {button_press_sequence_permutations:?}");
             let mut success = false;
             for button_press_sequence in button_press_sequence_permutations {
-                let mut indicator_lights = vec![false; machine.indicator_diagram.len()];
+                let mut joltages = vec![0; machine.indicator_diagram.len()];
 
                 for button_press in button_press_sequence {
                     let button_wiring = &machine.button_wirings[button_press];
-                    // flip indicator for each wired slot
+                    // increment joltage for each wired slot
                     for indicator_index in button_wiring {
                         let i = *indicator_index;
-                        indicator_lights[i] = !indicator_lights[i];
+                        joltages[i] += 1;
+                        if joltages[i] > machine.joltage_requirements[i] {
+                            break;
+                        }
                     }
                 }
-                if indicator_lights == machine.indicator_diagram {
+                if joltages == machine.joltage_requirements {
                     success = true;
                     break;
                 }
@@ -47,34 +55,23 @@ fn main() {
     println!("{total_button_presses:?}");
 }
 
-fn permutations(items: &Vec<usize>, k: usize) -> Vec<Vec<usize>> {
+fn permutations_with_repetitions(items: &Vec<usize>, k: usize) -> Vec<Vec<usize>> {
     let mut result = Vec::new();
     let mut current = Vec::with_capacity(items.len());
-    let mut used = vec![false; items.len()];
-    perm_rec(items, k, &mut used, &mut current, &mut result);
+    perm_rec(items, k, &mut current, &mut result);
     result
 }
 
-fn perm_rec(
-    items: &Vec<usize>,
-    k: usize,
-    used: &mut Vec<bool>,
-    current: &mut Vec<usize>,
-    result: &mut Vec<Vec<usize>>,
-) {
+fn perm_rec(items: &Vec<usize>, k: usize, current: &mut Vec<usize>, result: &mut Vec<Vec<usize>>) {
     if current.len() == k {
         result.push(current.clone());
         return;
     }
 
     for i in 0..items.len() {
-        if !used[i] {
-            used[i] = true;
-            current.push(items[i]);
-            perm_rec(items, k, used, current, result);
-            current.pop();
-            used[i] = false;
-        }
+        current.push(items[i]);
+        perm_rec(items, k, current, result);
+        current.pop();
     }
 }
 
