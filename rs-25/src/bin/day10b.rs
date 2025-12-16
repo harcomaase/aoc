@@ -15,63 +15,10 @@ fn main() {
     //TODO: instead of brute-forcing permutations, we can start from the joltage_requirements,
     //      then ... idk, select most fitting buttons to reduce the highest||lowest first?
 
-    let mut total_button_presses = 0;
-    for machine in &machines {
-        // create permutations of button wirings (each button probably only
-        // has to be pressed once, since two button presses change nothing)
-        let indices: Vec<usize> = (0..machine.button_wirings.len()).collect();
-        // try first 1 button press, then 2, then... n
-        for permutation_length in 1.. {
-            let button_press_sequence_permutations =
-                permutations_with_repetitions(&indices, permutation_length);
-            // println!("permutations: {button_press_sequence_permutations:?}");
-            let mut success = false;
-            for button_press_sequence in button_press_sequence_permutations {
-                let mut joltages = vec![0; machine.indicator_diagram.len()];
+    for machine in machines {
+        let mut wirings_ordered = machine.button_wirings.clone();
+        wirings_ordered.sort_by(|a, b| b.len().cmp(&a.len()));
 
-                for button_press in button_press_sequence {
-                    let button_wiring = &machine.button_wirings[button_press];
-                    // increment joltage for each wired slot
-                    for indicator_index in button_wiring {
-                        let i = *indicator_index;
-                        joltages[i] += 1;
-                        if joltages[i] > machine.joltage_requirements[i] {
-                            break;
-                        }
-                    }
-                }
-                if joltages == machine.joltage_requirements {
-                    success = true;
-                    break;
-                }
-            }
-            if success {
-                total_button_presses += permutation_length;
-                break;
-            }
-        }
-    }
-
-    println!("{total_button_presses:?}");
-}
-
-fn permutations_with_repetitions(items: &Vec<usize>, k: usize) -> Vec<Vec<usize>> {
-    let mut result = Vec::new();
-    let mut current = Vec::with_capacity(items.len());
-    perm_rec(items, k, &mut current, &mut result);
-    result
-}
-
-fn perm_rec(items: &Vec<usize>, k: usize, current: &mut Vec<usize>, result: &mut Vec<Vec<usize>>) {
-    if current.len() == k {
-        result.push(current.clone());
-        return;
-    }
-
-    for i in 0..items.len() {
-        current.push(items[i]);
-        perm_rec(items, k, current, result);
-        current.pop();
     }
 }
 
